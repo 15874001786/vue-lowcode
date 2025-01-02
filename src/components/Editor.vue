@@ -46,33 +46,47 @@ console.log(55, compileDom)
 // 解析sfc template模块的
 console.log(66, compileCore)
 
-const code = ref('<template><section id="lowcode"></section></template>');
+const code = ref('<script setup>console.log(567)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
 const previewContainer = ref(null);
 
 const renderCode = async () => {
   try {
     const { descriptor } = compilerSfc.parse(code.value);
-    const { ast } = compilerSfc.compileTemplate({ source: descriptor.template.content  });
+    const { ast } = compilerSfc.compileTemplate({ source: descriptor.template.content });
     console.log(11, descriptor, ast)
-     // 将修改后的 AST 转换回代码
+    // 将修改后的 AST 转换回代码
     const transformedCode = compileCore.generate(ast);
     console.log(22, transformedCode.code)
 
+    if (descriptor.styles && descriptor.styles.length > 0) {
+      descriptor.styles.forEach((styleBlock) => {
+        const style = compilerSfc.compileStyle({
+          source: styleBlock.content,
+          id: 'example-template',
+          scoped: styleBlock.scoped,
+        });
+
+        // 动态创建并应用样式
+        const styleEl = document.createElement('style');
+        styleEl.textContent = style.code;
+        document.head.appendChild(styleEl);
+      });
+    }
     // 动态创建一个 Vue 组件
     const Component = {
-        name: 'DynamicComponent',
-        setup() {
-            if (descriptor.scriptSetup) {
-                try {
-                    // 使用 new Function 来执行 scriptSetup 内容
-                    return new Function('require', descriptor.scriptSetup.content)(require);
-                } catch (error) {
-                    console.error('Error in scriptSetup:', error);
-                }
-            }
-            return {};
-        },
-        template: descriptor.template ? descriptor.template.content : '<div>No template found</div>',
+      name: 'DynamicComponent',
+      setup() {
+        if (descriptor.scriptSetup) {
+          try {
+            // 使用 new Function 来执行 scriptSetup 内容
+            return new Function('require', descriptor.scriptSetup.content)(require);
+          } catch (error) {
+            console.error('Error in scriptSetup:', error);
+          }
+        }
+        return {};
+      },
+      template: descriptor.template ? descriptor.template.content : '<div>No template found</div>',
     };
 
     // 清空之前的预览内容
@@ -89,10 +103,10 @@ const renderCode = async () => {
     // 创建一个新的 Vue 应用实例来渲染组件
     const app = createApp({
       render() {
-          return h(Component);
+        return h(Component);
       },
     });
-      console.log('Vue App Instance:', app);
+    console.log('Vue App Instance:', app);
 
     // 注册 Element Plus
     app.use(ElementPlus);
