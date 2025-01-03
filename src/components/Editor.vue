@@ -10,7 +10,8 @@
     </div>
     <div class="preview" ref="previewContainer" @drop="onDrop" @dragover.prevent style="width: 500px"></div>
     <div class="editor">
-      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12" @change="renderCode"></el-input type="textarea">
+      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12" @change="renderCode"></el-input
+        type="textarea">
 
       <div class="option-list" v-if="curTemplate && curTemplate.options?.length > 0">
         <p>配置项</p>
@@ -33,7 +34,7 @@ import * as compileCore from '@vue/compiler-core';
 // import * as generate from '@babel/generator';
 import * as compilerSfc from '@vue/compiler-sfc';
 import ElementPlus from 'element-plus';
-import { createApp, h, ref, watch, onMounted, nextTick } from 'vue';
+import { createApp, h, ref, watch, onMounted, nextTick, reactive, computed } from 'vue';
 import * as Vue from 'vue';
 import 'element-plus/dist/index.css';
 import { componentsMap } from '../config/component'
@@ -46,7 +47,7 @@ console.log(55, compileDom)
 // 解析sfc template模块的
 console.log(66, compileCore)
 
-const code = ref('<script setup>console.log(567);console.log(ref);const aa = ref(); console.log(aa)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
+const code = ref('<script setup>console.log(567);console.log(ref, computed);const aa = ref(); console.log(aa)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
 const previewContainer = ref(null);
 
 const renderCode = async () => {
@@ -82,8 +83,24 @@ const renderCode = async () => {
         const context = {};
         if (descriptor.scriptSetup) {
           try {
-            // 使用 new Function 来执行 scriptSetup 内容
-            new Function('context', 'ref', descriptor.scriptSetup.content).call(context, context, ref);
+            // 将 Vue 模块对象和自定义内容组织成一个对象
+            const api = {
+              ...Vue,
+              customMethod() {
+                console.log('This is a custom method');
+              },
+              customData: 'Some custom data',
+            };
+
+            // 使用 new Function 来执行 scriptSetup 内容，并将 api 作为参数传递
+            new Function(
+              'context', 'Vue',
+              `
+                  with (Vue) {
+                    ${descriptor.scriptSetup.content}
+                  }
+                  `
+            ).call(context, context, api);
           } catch (error) {
             console.error('Error in scriptSetup:', error);
           }
