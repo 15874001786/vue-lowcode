@@ -10,7 +10,7 @@
     </div>
     <div class="preview" ref="previewContainer" @drop="onDrop" @dragover.prevent style="width: 500px"></div>
     <div class="editor">
-      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12"></el-input type="textarea">
+      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12" @change="renderCode"></el-input type="textarea">
 
       <div class="option-list" v-if="curTemplate && curTemplate.options?.length > 0">
         <p>配置项</p>
@@ -46,7 +46,7 @@ console.log(55, compileDom)
 // 解析sfc template模块的
 console.log(66, compileCore)
 
-const code = ref('<script setup>console.log(567)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
+const code = ref('<script setup>console.log(567);console.log(ref);const aa = ref(); console.log(aa)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
 const previewContainer = ref(null);
 
 const renderCode = async () => {
@@ -62,29 +62,33 @@ const renderCode = async () => {
       descriptor.styles.forEach((styleBlock) => {
         const style = compilerSfc.compileStyle({
           source: styleBlock.content,
-          id: 'example-template',
+          id: 'code-css',
           scoped: styleBlock.scoped,
         });
 
         // 动态创建并应用样式
-        const styleEl = document.createElement('style');
-        styleEl.textContent = style.code;
-        document.head.appendChild(styleEl);
+        if (style) {
+          console.log(432, style, styleBlock)
+          const styleEl = document.createElement('style');
+          styleEl.textContent = style.code;
+          document.head.appendChild(styleEl);
+        }
       });
     }
     // 动态创建一个 Vue 组件
     const Component = {
       name: 'DynamicComponent',
       setup() {
+        const context = {};
         if (descriptor.scriptSetup) {
           try {
             // 使用 new Function 来执行 scriptSetup 内容
-            return new Function('require', descriptor.scriptSetup.content)(require);
+            new Function('context', 'ref', descriptor.scriptSetup.content).call(context, context, ref);
           } catch (error) {
             console.error('Error in scriptSetup:', error);
           }
         }
-        return {};
+        return context;
       },
       template: descriptor.template ? descriptor.template.content : '<div>No template found</div>',
     };
@@ -131,7 +135,7 @@ const renderCode = async () => {
   }
 };
 
-watch(code, renderCode);
+// watch(code, renderCode);
 
 onMounted(() => {
   renderCode();
@@ -157,6 +161,7 @@ function onDrop(event) {
     return `${p1}${p2}${insertString}${p3}`;
   });
   code.value = modifiedHtml;
+  renderCode();
 }
 function insertId(str, id) {
   // 要插入的字符串
