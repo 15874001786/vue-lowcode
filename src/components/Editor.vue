@@ -47,7 +47,7 @@ console.log(55, compileDom)
 // 解析sfc template模块的
 console.log(66, compileCore)
 
-const code = ref('<script setup>console.log(567);console.log(ref, computed);const aa = ref(); console.log(aa)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
+const code = ref('<script setup>function testdd() {alert("test"); const aaa = ref("123"); console.log(aaa.value)}<\/script><template><section id="lowcode" @click="testdd()">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
 const previewContainer = ref(null);
 
 const renderCode = async () => {
@@ -58,6 +58,8 @@ const renderCode = async () => {
     // 将修改后的 AST 转换回代码
     const transformedCode = compileCore.generate(ast);
     console.log(22, transformedCode.code)
+    const frame = compilerSfc.generateCodeFrame(code.value, 1, 12);
+    console.log(33, frame)
 
     if (descriptor.styles && descriptor.styles.length > 0) {
       descriptor.styles.forEach((styleBlock) => {
@@ -69,7 +71,6 @@ const renderCode = async () => {
 
         // 动态创建并应用样式
         if (style) {
-          console.log(432, style, styleBlock)
           const styleEl = document.createElement('style');
           styleEl.textContent = style.code;
           document.head.appendChild(styleEl);
@@ -149,6 +150,9 @@ const renderCode = async () => {
     });
   } catch (error) {
     console.error('Error compiling Vue SFC:', error);
+    // 显示编译错误信息
+    const frame = compilerSfc.generateCodeFrame(code.value, error.start, error.end);
+    console.error(`Error during component compilation: ${error.message}\n${frame}`);
   }
 };
 
