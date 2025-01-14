@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-ignore": "vite build"
   },
   "dependencies": {
     "@babel/generator": "^7.26.3",

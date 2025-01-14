@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { Repl } from '@vue/repl';
+// import { Repl } from '@vue/repl';
 import { ref, computed, onMounted } from 'vue';
 import Editor from './components/Editor.vue';
 
