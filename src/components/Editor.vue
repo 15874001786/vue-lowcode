@@ -10,7 +10,7 @@
     </div>
     <div class="preview" ref="previewContainer" @drop="onDrop" @dragover.prevent style="width: 500px"></div>
     <div class="editor">
-      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12" @change="renderCode"></el-input
+      <el-input type="textarea" v-model="code" style="width: 500px;" :rows="12"></el-input
         type="textarea">
 
       <div class="option-list" v-if="curTemplate && curTemplate.options?.length > 0">
@@ -33,33 +33,44 @@ import * as compileDom from '@vue/compiler-dom';
 import * as compileCore from '@vue/compiler-core';
 // import * as generate from '@babel/generator';
 import * as compilerSfc from '@vue/compiler-sfc';
+import * as sfcDescriptor from 'vue-sfc-descriptor-to-string';
+import * as vueTemplateCompiler from 'vue-template-compiler';
 import ElementPlus from 'element-plus';
 import { createApp, h, ref, watch, onMounted, nextTick, reactive, computed } from 'vue';
 import * as Vue from 'vue';
 import 'element-plus/dist/index.css';
+import { HtmlParser } from '@starptech/webparser';
+import fromWebparser from '@starptech/hast-util-from-webparser';
+// import prettyhtml from '@starptech/prettyhtml';
+import toHTML from '@starptech/prettyhtml-hast-to-html';
 import { componentsMap } from '../config/component'
 
 let currentApp = null; // 用于存储当前的应用实例
 
-console.log(44, compilerSfc)
+console.log(11, compilerSfc, toHTML)
 // 解析sfc template模块的
-console.log(55, compileDom)
-// 解析sfc template模块的
-console.log(66, compileCore)
+console.log(22, compileCore)
 
-const code = ref('<script setup>function testdd() {alert("test"); const aaa = ref("123"); console.log(aaa.value)}<\/script><template><section id="lowcode" @click="testdd()">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
+// const code = ref('<script setup>function testdd() {alert("test"); const aaa = ref("123"); console.log(aaa.value)}<\/script><template><section id="lowcode" @click="testdd()">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
+const code = ref('<script setup>console.log(567)<\/script><template><section id="lowcode">11</section></template><style>#lowcode { font-size: 24px; color: red; }</style>');
 const previewContainer = ref(null);
 
 const renderCode = async () => {
   try {
     const { descriptor } = compilerSfc.parse(code.value);
-    const { ast } = compilerSfc.compileTemplate({ source: descriptor.template.content });
-    console.log(11, descriptor, ast)
+    // const { ast } = compilerSfc.compileTemplate({ source: descriptor.template.content });
+    console.log(33, descriptor)
     // 将修改后的 AST 转换回代码
-    const transformedCode = compileCore.generate(ast);
-    console.log(22, transformedCode.code)
-    const frame = compilerSfc.generateCodeFrame(code.value, 1, 12);
-    console.log(33, frame)
+    // const transformedCode = compileCore.generate(ast);
+    // console.log(22, transformedCode.code)
+    // const HTML = new HtmlParser();
+    // const root = HTML.parse(descriptor.template.content);
+    // const hast = fromWebparser(root.rootNodes);
+    // hast.children[0].children[0].value = 'buttonhast'
+    // const code1 = toHTML(hast);
+    // descriptor.template.content = code1;
+    // const compiledScript = compilerSfc.compileScript(descriptor, { id: 'dynamic' });
+    // console.log(77, compiledScript)
 
     if (descriptor.styles && descriptor.styles.length > 0) {
       descriptor.styles.forEach((styleBlock) => {
@@ -80,6 +91,39 @@ const renderCode = async () => {
     // 动态创建一个 Vue 组件
     const Component = {
       name: 'DynamicComponent',
+      // setup() {
+      //   const context = Vue.reactive({});
+      //   // 将 Vue 模块对象和自定义内容组织成一个对象
+      //   const api = {
+      //     ...Vue,
+      //     context,
+      //     console,
+      //     alert
+      //   };
+
+      //   if (compiledScript) {
+      //     try {
+      //       // Extract the setup function from the compiled script
+      //       const setupFunction = new Function(
+      //         'context',
+      //         'Vue',
+      //         `
+      //           with (Vue) {
+      //             ${compiledScript.content}
+      //           }
+      //         `
+      //       ).call(api, context, api);
+
+      //       // Execute the setup function to populate context
+      //       if (typeof setupFunction === 'function') {
+      //         setupFunction.call(context);
+      //       }
+      //     } catch (error) {
+      //       console.error('Error in scriptSetup:', error);
+      //     }
+      //   }
+      //   return context;
+      // },
       setup() {
         const context = {};
         if (descriptor.scriptSetup) {
@@ -156,11 +200,12 @@ const renderCode = async () => {
   }
 };
 
-// watch(code, renderCode);
+watch(code, renderCode);
 
 onMounted(() => {
   renderCode();
 });
+
 const currentCom = ref(null)
 const curTemplate = ref(null)
 

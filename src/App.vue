@@ -1,10 +1,12 @@
 <template>
   <div>
     <Editor />
+    <!-- <Repl :initial-code="code" /> -->
   </div>
 </template>
 
 <script setup lang="ts">
+import { Repl } from '@vue/repl';
 import { ref, computed, onMounted } from 'vue';
 import Editor from './components/Editor.vue';
 

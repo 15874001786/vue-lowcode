@@ -11,12 +11,20 @@
   "dependencies": {
     "@babel/generator": "^7.26.3",
     "@babel/standalone": "^7.26.4",
+    "@starptech/hast-util-from-webparser": "^0.10.0",
+    "@starptech/prettyhtml": "^0.10.0",
+    "@starptech/prettyhtml-hast-to-html": "^0.10.0",
+    "@starptech/webparser": "^0.10.0",
     "@vue/compiler-core": "^3.5.13",
     "@vue/compiler-dom": "^3.5.13",
     "@vue/compiler-sfc": "^3.5.13",
+    "@vue/repl": "^4.4.3",
     "ace-builds": "^1.37.1",
     "element-plus": "^2.9.1",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-sfc-descriptor-stringify": "^0.1.0",
+    "vue-sfc-descriptor-to-string": "^3.0.1",
+    "vue-template-compiler": "^2.7.16"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
